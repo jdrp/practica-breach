@@ -55,7 +55,7 @@ def get_response_length(guess):
         return None
 
 
-def guess_token(url, param_name, possible_chars, padding, padding_amount):
+def guess_token(url, param_name, possible_chars, padding, padding_amount=1):
     guessed_token = ''
     while True:
         found_char = False
