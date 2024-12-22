@@ -27,7 +27,7 @@ import requests
 import time
 import urllib3
 import concurrent.futures 
-import argparse# Disable insecure request warnings
+# Disable insecure request warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Target
